@@ -1,0 +1,94 @@
+'use strict';
+
+var	gulp = require('gulp'),
+	browserify = require('browserify'),
+	jadeify = require('jadeify'),
+	buffer = require('vinyl-buffer'),
+	source = require('vinyl-source-stream'),
+
+	jshint = require('gulp-jshint'),
+	stylish = require('jshint-stylish'),
+
+	stylus = require('gulp-stylus'),
+	concat = require('gulp-concat-css'),
+	nib = require('nib'),
+
+	minify = require('gulp-minify-css'),
+	uglify = require('gulp-uglify'),
+
+	watchify = require('watchify'),
+	assign = require('lodash.assign'),
+
+    livereload = require('gulp-livereload');
+
+var opts = {
+    entries: './client/app.js',
+    transform: [jadeify]
+  }
+
+opts = assign({}, watchify.args, opts);
+
+gulp.task('build', ['styl', 'js']);
+
+gulp.task('js', function() {
+  return generateBundle(browserify(opts));
+});
+
+gulp.task('jshint', function() {
+ return gulp.src('./client/**/*.js')
+  .pipe(jshint('.jshintrc'))
+   .pipe(jshint.reporter('jshint-stylish'))
+   .pipe(jshint.reporter('fail'));
+});
+
+function styl () {
+  return gulp.src('./client/app.styl')
+    .pipe(stylus({ use: nib() }))
+    .pipe(concat('app.css'))
+    // .pipe(minify())
+    .pipe(gulp.dest('./www/css'));
+}
+
+gulp.task('styl', function() {
+  return styl();
+})
+
+gulp.task('styl:livereload', function () {
+  return styl().pipe(livereload({ start: true }));
+})
+
+gulp.task('styl:watch', ['styl:livereload'], function () {
+  return gulp.watch(['./client/app.styl','./client/**/*.styl'], ['styl:livereload']);
+})
+
+gulp.task('jshint:watch', function () {
+  return gulp.watch(['./client/**/*.js', './client/app.js']);
+})
+
+gulp.task('js:watch', function() {
+  var w = watchify(browserify(opts));
+
+  w.on('update', function (file) {
+    console.log('file modified: %s, rebuilding...', file);
+    var b = generateBundle(w).pipe(livereload())
+    console.log('rebuilt')
+    return b
+  })
+
+  return generateBundle(w)
+    .pipe(livereload({ start: true }));
+
+})
+
+gulp.task('watch', ['js:watch', 'styl:watch', 'jshint:watch']);
+gulp.task('default', ['watch', 'jshint', 'build']);
+
+function generateBundle(b) {
+  return b
+  .bundle()
+  .pipe(source('app.js'))
+  .pipe(buffer())
+  //.pipe(uglify())
+  .pipe(gulp.dest('./www/'))
+}
+
