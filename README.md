@@ -1,2 +1,2 @@
-# My-Javascript-Projects-Boilerplate
-Tools and configuration of my Javascript projects.
+# Js-client-boilerplate
+Tools and configuration of my Javascript client projects.
