@@ -5,6 +5,8 @@ var	gulp = require('gulp'),
 	jadeify = require('jadeify'),
 	buffer = require('vinyl-buffer'),
 	source = require('vinyl-source-stream'),
+  jasmineBrowser = require('gulp-jasmine-browser'),
+  watch = require('gulp-watch'),
 
 	jshint = require('gulp-jshint'),
 	stylish = require('jshint-stylish'),
@@ -19,14 +21,26 @@ var	gulp = require('gulp'),
 	watchify = require('watchify'),
 	assign = require('lodash.assign'),
 
-    livereload = require('gulp-livereload');
+  livereload = require('gulp-livereload'),
+  serve = require('gulp-serve');
+
+var Server = require('karma').Server;
+
+gulp.task('karma', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: false
+  }, done).start();
+});
 
 var opts = {
-    entries: './client/app.js',
+    entries: './app/app.js',
     transform: [jadeify]
   }
 
 opts = assign({}, watchify.args, opts);
+
+gulp.task('serve', serve('www'));
 
 gulp.task('build', ['styl', 'js']);
 
@@ -34,36 +48,48 @@ gulp.task('js', function() {
   return generateBundle(browserify(opts));
 });
 
+
+gulp.task('test', function () {
+  var testFiles = ['./app/**/*.js', './spec/*.js'];
+  return gulp.src(testFiles)
+    .pipe(watch(testFiles))
+    .pipe(livereload({ start: true }))
+    .pipe(jasmineBrowser.specRunner())
+    .pipe(jasmineBrowser.server({port: 8080}));
+});
+
+
 gulp.task('jshint', function() {
- return gulp.src('./client/**/*.js')
+ return gulp.src('./app/**/*.js')
   .pipe(jshint('.jshintrc'))
    .pipe(jshint.reporter('jshint-stylish'))
    .pipe(jshint.reporter('fail'));
 });
 
 function styl () {
-  return gulp.src('./client/app.styl')
+  return gulp.src('./app/app.styl')
     .pipe(stylus({ use: nib() }))
     .pipe(concat('app.css'))
     // .pipe(minify())
     .pipe(gulp.dest('./www/css'));
 }
 
-gulp.task('styl', function() {
+gulp.task('styl', function () {
   return styl();
-})
+});
 
 gulp.task('styl:livereload', function () {
   return styl().pipe(livereload({ start: true }));
-})
+});
 
 gulp.task('styl:watch', ['styl:livereload'], function () {
-  return gulp.watch(['./client/app.styl','./client/**/*.styl'], ['styl:livereload']);
-})
+  return gulp.watch(['./app/app.styl','./app/**/*.styl'], ['styl:livereload']);
+});
 
 gulp.task('jshint:watch', function () {
-  return gulp.watch(['./client/**/*.js', './client/app.js']);
-})
+  return gulp.watch(['./app/**/*.js', './app/app.js']);
+});
+
 
 gulp.task('js:watch', function() {
   var w = watchify(browserify(opts));
@@ -73,15 +99,15 @@ gulp.task('js:watch', function() {
     var b = generateBundle(w).pipe(livereload())
     console.log('rebuilt')
     return b
-  })
+  });
 
   return generateBundle(w)
     .pipe(livereload({ start: true }));
 
-})
+});
 
 gulp.task('watch', ['js:watch', 'styl:watch', 'jshint:watch']);
-gulp.task('default', ['watch', 'jshint', 'build']);
+gulp.task('default', ['watch', 'jshint', 'build', 'serve', 'test']);
 
 function generateBundle(b) {
   return b

@@ -3,11 +3,6 @@
   "version": "0.0.1",
   "description": "My js projects start and my favorites packages",
   "main": "gulpfile.js",
-  "scripts": {
-    "test": "make test",
-    "jade": "jade --watch --pretty client/*.jade --out ./www",
-    "server": "http-server /www"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/AlbertoDSosa/My-Javascript-Projects-Boilerplate.git"
@@ -26,18 +21,26 @@
   "homepage": "https://github.com/AlbertoDSosa/My-Javascript-Projects-Boilerplate",
   "devDependencies": {
     "browserify": "^10.2.6",
-    "gulp": "^3.9.0",
+    "gulp": "^3.9.1",
     "gulp-concat-css": "^2.2.0",
     "gulp-jade": "^1.0.1",
+    "gulp-jasmine-browser": "^0.2.3",
     "gulp-jshint": "^1.11.2",
     "gulp-livereload": "^3.8.0",
     "gulp-minify-css": "^1.2.0",
     "gulp-serve": "^1.0.0",
     "gulp-stylus": "^2.0.5",
     "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.6",
+    "gulp-watch": "^4.3.5",
     "jade": "^1.11.0",
     "jadeify": "^4.3.0",
+    "jasmine": "^2.5.1",
+    "jasmine-core": "^2.5.1",
     "jshint-stylish": "^2.0.1",
+    "karma": "^1.3.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-jasmine": "^1.0.2",
     "lodash.assign": "^3.2.0",
     "nib": "^1.1.0",
     "vinyl-buffer": "^1.0.0",
@@ -45,7 +48,6 @@
     "watchify": "^3.3.0"
   },
   "dependencies": {
-    "jquery": "^2.1.4",
     "page": "^1.6.3",
     "socket.io-client": "^1.3.6"
   }
